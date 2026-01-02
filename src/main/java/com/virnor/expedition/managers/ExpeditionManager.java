@@ -19,6 +19,7 @@ public class ExpeditionManager {
     private final VirnorExpedition plugin;
     private final Set<UUID> playersNearChests;
     private BukkitTask mainTask;
+    private BukkitTask healthBarTask;
 
     public ExpeditionManager(VirnorExpedition plugin) {
         this.plugin = plugin;
@@ -33,11 +34,19 @@ public class ExpeditionManager {
             plugin.getMobManager().checkMobDistances();
             updateHolograms();
         }, 20L, 20L);
+        
+        // Health bar update task - runs every 5 ticks for smoother updates
+        healthBarTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            plugin.getDamageTracker().updateAllHealthBars();
+        }, 5L, 5L);
     }
 
     public void stopTasks() {
         if (mainTask != null) {
             mainTask.cancel();
+        }
+        if (healthBarTask != null) {
+            healthBarTask.cancel();
         }
     }
 

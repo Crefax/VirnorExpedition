@@ -14,6 +14,19 @@ public class ConfigManager {
     private int mobCount;
     private String mobName;
     
+    // Mob health bar settings
+    private boolean showHealthBar;
+    private int healthBarTotalBars;
+    private String healthBarSymbol;
+    private String healthBarHighColor;
+    private String healthBarMediumColor;
+    private String healthBarLowColor;
+    private String healthBarBackgroundColor;
+    private double healthBarHeightOffset;
+    
+    // Loot winner mode
+    private String lootWinnerMode;
+    
     // Distance settings
     private double spawnDistance;
     private double teleportDistance;
@@ -54,6 +67,12 @@ public class ConfigManager {
     private String msgLootSetDeleted;
     private String msgLootSetSaved;
     private String msgMobTypeChanged;
+    
+    // Damage tracking messages
+    private String msgDamageDealt;
+    private String msgYouWonLoot;
+    private String msgLostLoot;
+    private String msgTopDamage;
 
     public ConfigManager(VirnorExpedition plugin) {
         this.plugin = plugin;
@@ -75,6 +94,19 @@ public class ConfigManager {
         mobHealth = config.getDouble("mob.health", 50.0);
         mobCount = config.getInt("mob.count", 3);
         mobName = config.getString("mob.name", "&c&lExpedition Guardian");
+        
+        // Mob health bar settings
+        showHealthBar = config.getBoolean("mob.showHealthBar", true);
+        healthBarTotalBars = config.getInt("mob.healthBarTotalBars", 20);
+        healthBarSymbol = config.getString("mob.healthBarSymbol", "|");
+        healthBarHighColor = config.getString("mob.healthBarHighColor", "&a");
+        healthBarMediumColor = config.getString("mob.healthBarMediumColor", "&e");
+        healthBarLowColor = config.getString("mob.healthBarLowColor", "&c");
+        healthBarBackgroundColor = config.getString("mob.healthBarBackgroundColor", "&8");
+        healthBarHeightOffset = config.getDouble("mob.healthBarHeightOffset", 0.5);
+        
+        // Loot winner mode
+        lootWinnerMode = config.getString("lootWinnerMode", "MOST_DAMAGE");
         
         // Distance settings
         spawnDistance = config.getDouble("distances.spawn", 10.0);
@@ -116,6 +148,12 @@ public class ConfigManager {
         msgLootSetDeleted = config.getString("messages.lootSetDeleted", "&cLoot seti silindi: &f%loot%");
         msgLootSetSaved = config.getString("messages.lootSetSaved", "&aLoot seti kaydedildi: &f%loot%");
         msgMobTypeChanged = config.getString("messages.mobTypeChanged", "&aMob tipi değiştirildi: &f%type%");
+        
+        // Damage tracking messages
+        msgDamageDealt = config.getString("messages.damageDealt", "&7%player% &e%damage% &7hasar verdi!");
+        msgYouWonLoot = config.getString("messages.youWonLoot", "&a&lTebrikler! &aEn çok hasar vererek lootu kazandın!");
+        msgLostLoot = config.getString("messages.lostLoot", "&c%winner% &7lootu kazandı. Sen &e%your_damage% &7hasar verdin.");
+        msgTopDamage = config.getString("messages.topDamage", "&6En Çok Hasar: &f%player% &7- &e%damage%");
     }
 
     public void saveConfig() {
@@ -125,6 +163,17 @@ public class ConfigManager {
         config.set("mob.health", mobHealth);
         config.set("mob.count", mobCount);
         config.set("mob.name", mobName);
+        
+        config.set("mob.showHealthBar", showHealthBar);
+        config.set("mob.healthBarTotalBars", healthBarTotalBars);
+        config.set("mob.healthBarSymbol", healthBarSymbol);
+        config.set("mob.healthBarHighColor", healthBarHighColor);
+        config.set("mob.healthBarMediumColor", healthBarMediumColor);
+        config.set("mob.healthBarLowColor", healthBarLowColor);
+        config.set("mob.healthBarBackgroundColor", healthBarBackgroundColor);
+        config.set("mob.healthBarHeightOffset", healthBarHeightOffset);
+        
+        config.set("lootWinnerMode", lootWinnerMode);
         
         config.set("distances.spawn", spawnDistance);
         config.set("distances.teleport", teleportDistance);
@@ -162,6 +211,11 @@ public class ConfigManager {
         config.set("messages.lootSetDeleted", msgLootSetDeleted);
         config.set("messages.lootSetSaved", msgLootSetSaved);
         config.set("messages.mobTypeChanged", msgMobTypeChanged);
+        
+        config.set("messages.damageDealt", msgDamageDealt);
+        config.set("messages.youWonLoot", msgYouWonLoot);
+        config.set("messages.lostLoot", msgLostLoot);
+        config.set("messages.topDamage", msgTopDamage);
         
         plugin.saveConfig();
     }
@@ -225,4 +279,25 @@ public class ConfigManager {
     public String getMsgLootSetDeleted() { return msgLootSetDeleted; }
     public String getMsgLootSetSaved() { return msgLootSetSaved; }
     public String getMsgMobTypeChanged() { return msgMobTypeChanged; }
+    
+    // Mob health bar getters
+    public boolean isShowHealthBar() { return showHealthBar; }
+    public int getHealthBarTotalBars() { return healthBarTotalBars; }
+    public String getHealthBarSymbol() { return healthBarSymbol; }
+    public String getHealthBarHighColor() { return healthBarHighColor; }
+    public String getHealthBarMediumColor() { return healthBarMediumColor; }
+    public String getHealthBarLowColor() { return healthBarLowColor; }
+    public String getHealthBarBackgroundColor() { return healthBarBackgroundColor; }
+    public double getHealthBarHeightOffset() { return healthBarHeightOffset; }
+    
+    // Loot winner mode getter
+    public String getLootWinnerMode() { return lootWinnerMode; }
+    public boolean isMostDamageMode() { return "MOST_DAMAGE".equalsIgnoreCase(lootWinnerMode); }
+    public boolean isLastHitMode() { return "LAST_HIT".equalsIgnoreCase(lootWinnerMode); }
+    
+    // Damage tracking message getters
+    public String getMsgDamageDealt() { return msgDamageDealt; }
+    public String getMsgYouWonLoot() { return msgYouWonLoot; }
+    public String getMsgLostLoot() { return msgLostLoot; }
+    public String getMsgTopDamage() { return msgTopDamage; }
 }

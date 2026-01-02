@@ -51,6 +51,9 @@ public class MobManager {
             // Track mob
             chest.addMobUUID(mob.getUniqueId());
             mobToChestMap.put(mob.getUniqueId(), chest.getId());
+            
+            // Create health bar hologram
+            plugin.getDamageTracker().createHealthBar(mob);
         }
         
         chest.setMobsAlive(mobCount);
@@ -88,6 +91,9 @@ public class MobManager {
 
     public void removeMobsForChest(ExpeditionChest chest) {
         for (UUID mobUUID : chest.getMobUUIDs()) {
+            // Remove health bar first
+            plugin.getDamageTracker().removeHealthBar(mobUUID);
+            
             Entity entity = plugin.getServer().getEntity(mobUUID);
             if (entity != null && !entity.isDead()) {
                 entity.remove();
@@ -95,6 +101,9 @@ public class MobManager {
             mobToChestMap.remove(mobUUID);
         }
         chest.clearMobs();
+        
+        // Clear damage tracking for this chest
+        plugin.getDamageTracker().clearChestDamage(chest.getId());
     }
 
     public void removeAllMobs() {
@@ -102,6 +111,9 @@ public class MobManager {
             removeMobsForChest(chest);
         }
         mobToChestMap.clear();
+        
+        // Clean up all health bars
+        plugin.getDamageTracker().removeAllHealthBars();
     }
 
     public String getChestIdByMob(UUID mobUUID) {
@@ -163,6 +175,9 @@ public class MobManager {
     }
 
     public void onMobDeath(UUID mobUUID) {
+        // Remove health bar
+        plugin.getDamageTracker().removeHealthBar(mobUUID);
+        
         String chestId = mobToChestMap.remove(mobUUID);
         if (chestId != null) {
             ExpeditionChest chest = plugin.getDataManager().getExpeditionChest(chestId);

@@ -3,6 +3,7 @@ package com.virnor.expedition.listeners;
 import com.virnor.expedition.VirnorExpedition;
 import com.virnor.expedition.data.ExpeditionChest;
 import com.virnor.expedition.data.ExpeditionState;
+import com.virnor.expedition.managers.DamageTracker;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -43,15 +44,29 @@ public class MobDeathListener implements Listener {
 
         // Check if all mobs are dead
         if (chest.getMobsAlive() <= 0 && chest.getState() == ExpeditionState.ACTIVE) {
-            // Get the killer
-            Player killer = entity.getKiller();
-            if (killer != null) {
-                plugin.getExpeditionManager().onAllMobsKilled(chest, killer);
+            // Get the killer (last hitter)
+            Player lastHitter = entity.getKiller();
+            
+            // Determine the winner based on config (MOST_DAMAGE or LAST_HIT)
+            DamageTracker damageTracker = plugin.getDamageTracker();
+            Player winner = damageTracker.determineLootWinner(chestId, lastHitter);
+            
+            if (winner != null) {
+                // Announce damage results to all participants
+                damageTracker.announceDamageResults(chestId, winner);
+                
+                // Give ownership to winner
+                plugin.getExpeditionManager().onAllMobsKilled(chest, winner);
             } else {
                 // No player killed the last mob, reset the chest
                 chest.setState(ExpeditionState.READY);
-                plugin.getHologramManager().updateHologram(chest, "&6&lExpedition Chest", "&aHazır!");
+                plugin.getHologramManager().updateHologram(chest, 
+                    plugin.getConfigManager().getHologramTitle(), 
+                    plugin.getConfigManager().getHologramStatusReady());
             }
+            
+            // Clear damage tracking for this chest
+            damageTracker.clearChestDamage(chestId);
         }
     }
 }

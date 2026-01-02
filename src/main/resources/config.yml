@@ -1,4 +1,4 @@
-# VirnorExpedition Configuration v1.1.0
+# VirnorExpedition Configuration v1.2.0
 
 # Mob settings - These are global for all expedition chests
 mob:
@@ -6,6 +6,20 @@ mob:
   health: 50.0
   count: 3
   name: "&c&lExpedition Guardian"
+  # Health bar hologram above mobs
+  showHealthBar: true
+  healthBarTotalBars: 20          # Total number of bars |
+  healthBarSymbol: "|"            # Symbol for each bar
+  healthBarHighColor: "&a"        # Color when health > 50%
+  healthBarMediumColor: "&e"      # Color when health 25-50%
+  healthBarLowColor: "&c"         # Color when health < 25%
+  healthBarBackgroundColor: "&8"  # Color for empty bars
+  healthBarHeightOffset: 0.5      # Height above mob's head
+
+# Loot winner mode - determines who gets the loot
+# MOST_DAMAGE - Player who dealt the most total damage wins
+# LAST_HIT - Player who killed the last mob wins
+lootWinnerMode: MOST_DAMAGE
 
 # Distance settings
 distances:
@@ -52,6 +66,12 @@ messages:
   lootSetDeleted: "&cLoot seti silindi: &f%loot%"
   lootSetSaved: "&aLoot seti kaydedildi: &f%loot%"
   mobTypeChanged: "&aMob tipi değiştirildi: &f%type%"
+
+# Messages for damage tracking
+  damageDealt: "&7%player% &e%damage% &7hasar verdi!"
+  youWonLoot: "&a&lTebrikler! &aEn çok hasar vererek lootu kazandın!"
+  lostLoot: "&c%winner% &7lootu kazandı. Sen &e%your_damage% &7hasar verdin."
+  topDamage: "&6En Çok Hasar: &f%player% &7- &e%damage%"
 
 # Permission nodes (LuckPerms compatible)
 # expedition.admin - Admin komutları (set, remove, admin, reload)

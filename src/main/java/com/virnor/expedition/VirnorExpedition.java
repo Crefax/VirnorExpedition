@@ -7,6 +7,7 @@ import com.virnor.expedition.gui.GUIManager;
 import com.virnor.expedition.hologram.HologramManager;
 import com.virnor.expedition.listeners.*;
 import com.virnor.expedition.loot.LootManager;
+import com.virnor.expedition.managers.DamageTracker;
 import com.virnor.expedition.managers.ExpeditionManager;
 import com.virnor.expedition.managers.MobManager;
 import com.virnor.expedition.config.ConfigManager;
@@ -23,6 +24,7 @@ public class VirnorExpedition extends JavaPlugin {
     private LootManager lootManager;
     private GUIManager guiManager;
     private HologramManager hologramManager;
+    private DamageTracker damageTracker;
 
     @Override
     public void onEnable() {
@@ -34,6 +36,7 @@ public class VirnorExpedition extends JavaPlugin {
         lootManager = new LootManager(this);
         hologramManager = new HologramManager(this);
         mobManager = new MobManager(this);
+        damageTracker = new DamageTracker(this);
         expeditionManager = new ExpeditionManager(this);
         guiManager = new GUIManager(this);
         
@@ -52,6 +55,7 @@ public class VirnorExpedition extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new ChestInteractListener(this), this);
         getServer().getPluginManager().registerEvents(new GUIListener(this), this);
         getServer().getPluginManager().registerEvents(new MobTargetListener(this), this);
+        getServer().getPluginManager().registerEvents(new DamageListener(this), this);
         
         // Start tasks
         expeditionManager.startTasks();
@@ -75,6 +79,9 @@ public class VirnorExpedition extends JavaPlugin {
         }
         if (hologramManager != null) {
             hologramManager.removeAllHolograms();
+        }
+        if (damageTracker != null) {
+            damageTracker.removeAllHealthBars();
         }
         
         getLogger().info("VirnorExpedition has been disabled!");
@@ -110,5 +117,9 @@ public class VirnorExpedition extends JavaPlugin {
 
     public HologramManager getHologramManager() {
         return hologramManager;
+    }
+
+    public DamageTracker getDamageTracker() {
+        return damageTracker;
     }
 }
