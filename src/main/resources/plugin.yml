@@ -1,0 +1,30 @@
+name: VirnorExpedition
+version: ${project.version}
+main: com.virnor.expedition.VirnorExpedition
+api-version: '1.21'
+author: Virnor
+description: Expedition chest plugin with mob guards
+
+softdepend:
+  - LuckPerms
+
+commands:
+  expedition:
+    description: Expedition plugin commands
+    usage: /expedition <set|admin|reload|remove|list>
+    aliases: [exp]
+
+permissions:
+  expedition.admin:
+    description: Allows access to expedition admin commands (set, remove, admin, reload, list)
+    default: op
+  expedition.loot:
+    description: Allows players to loot expedition chests
+    default: true
+  expedition.bypass.cooldown:
+    description: Allows bypassing chest cooldown
+    default: op
+  expedition.bypass.ownership:
+    description: Allows opening any player's conquered chest
+    default: op
+

@@ -1,0 +1,60 @@
+# VirnorExpedition Configuration v1.1.0
+
+# Mob settings - These are global for all expedition chests
+mob:
+  type: ZOMBIE
+  health: 50.0
+  count: 3
+  name: "&c&lExpedition Guardian"
+
+# Distance settings
+distances:
+  spawn: 10.0          # Oyuncu bu mesafeye yaklaşınca moblar spawn olur
+  teleport: 20.0       # Moblar bu mesafeden uzaklaşırsa chest'e geri ışınlanır
+  mobSpawnRadius: 3.0  # Mobların chest etrafında spawn olacağı yarıçap
+
+# Time settings (in seconds)
+times:
+  ownershipDuration: 300  # Chest sahipliği süresi (5 dakika)
+  cooldownDuration: 90    # Loot alındıktan sonra cooldown süresi (1.5 dakika)
+
+# Hologram settings
+hologram:
+  enabled: true
+  heightOffset: 2.0      # Chest üzerinden hologram yüksekliği
+  lineSpacing: 0.3       # Hologram satırları arası mesafe
+  # Hologram mesajları
+  title: "&6&lExpedition Chest"
+  statusReady: "&aHazır!"
+  statusFighting: "&c&lSavaş!"
+  statusOwner: "&aSahip: &f%player%"
+  statusTimeLeft: "&eKalan: &f%time%"
+  statusCooldown: "&cCooldown: &f%time%"
+
+# Messages
+messages:
+  prefix: "&8[&6Expedition&8] &r"
+  mobsSpawned: "&eMoblar doğdu! Sandığı koruyorlar!"
+  chestConquered: "&aSandığı ele geçirdin! 5 dakikan var!"
+  lootReceived: "&aLoot başarıyla alındı!"
+  notOwner: "&cBu sandığın sahibi sen değilsin!"
+  cooldown: "&cSandık cooldown'da! Kalan süre: &e%time%"
+  ownershipExpired: "&cSandık sahipliğin sona erdi!"
+  noPermission: "&cBu işlemi yapmak için yetkin yok!"
+  chestCreated: "&aExpedition chest başarıyla oluşturuldu!"
+  chestRemoved: "&aExpedition chest başarıyla silindi!"
+  chestNotFound: "&cExpedition chest bulunamadı!"
+  configReloaded: "&aConfig yeniden yüklendi!"
+  approachToActivate: "&eSandığa yaklaşarak mobları tetikle!"
+  killMobsFirst: "&cÖnce tüm mobları öldürmelisin!"
+  cannotBreakChest: "&cExpedition chest'i kıramazsın! &e/expedition remove &ckullan."
+  lootSetCreated: "&aYeni loot seti oluşturuldu: &f%loot%"
+  lootSetDeleted: "&cLoot seti silindi: &f%loot%"
+  lootSetSaved: "&aLoot seti kaydedildi: &f%loot%"
+  mobTypeChanged: "&aMob tipi değiştirildi: &f%type%"
+
+# Permission nodes (LuckPerms compatible)
+# expedition.admin - Admin komutları (set, remove, admin, reload)
+# expedition.loot - Loot alma izni  
+# expedition.bypass.cooldown - Cooldown bypass
+# expedition.bypass.ownership - Sahiplik bypass (herkesin chestini açabilir)
