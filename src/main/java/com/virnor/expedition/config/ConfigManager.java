@@ -1,7 +1,6 @@
 package com.virnor.expedition.config;
 
 import com.virnor.expedition.VirnorExpedition;
-import com.virnor.expedition.data.MobDifficulty;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.EntityType;
 
@@ -15,7 +14,6 @@ public class ConfigManager {
     private double mobDamage;
     private int mobCount;
     private String mobName;
-    private MobDifficulty mobDifficulty;
     
     // Mob health bar settings
     private boolean showHealthBar;
@@ -98,7 +96,6 @@ public class ConfigManager {
         mobDamage = config.getDouble("mob.damage", 5.0);
         mobCount = config.getInt("mob.count", 3);
         mobName = config.getString("mob.name", "&c&lExpedition Guardian");
-        mobDifficulty = MobDifficulty.fromString(config.getString("mob.difficulty", "NORMAL"));
         
         // Mob health bar settings
         showHealthBar = config.getBoolean("mob.showHealthBar", true);
@@ -169,7 +166,6 @@ public class ConfigManager {
         config.set("mob.damage", mobDamage);
         config.set("mob.count", mobCount);
         config.set("mob.name", mobName);
-        config.set("mob.difficulty", mobDifficulty.name());
         
         config.set("mob.showHealthBar", showHealthBar);
         config.set("mob.healthBarTotalBars", healthBarTotalBars);
@@ -242,14 +238,6 @@ public class ConfigManager {
     
     public String getMobName() { return mobName; }
     public void setMobName(String mobName) { this.mobName = mobName; saveConfig(); }
-    
-    public MobDifficulty getMobDifficulty() { return mobDifficulty; }
-    public void setMobDifficulty(MobDifficulty mobDifficulty) { this.mobDifficulty = mobDifficulty; saveConfig(); }
-    
-    // Get effective values with difficulty multiplier
-    public double getEffectiveMobHealth() { return mobHealth * mobDifficulty.getHealthMultiplier(); }
-    public double getEffectiveMobDamage() { return mobDamage * mobDifficulty.getDamageMultiplier(); }
-    public int getEffectiveMobCount() { return (int) Math.ceil(mobCount * mobDifficulty.getCountMultiplier()); }
     
     public double getSpawnDistance() { return spawnDistance; }
     public void setSpawnDistance(double spawnDistance) { this.spawnDistance = spawnDistance; saveConfig(); }

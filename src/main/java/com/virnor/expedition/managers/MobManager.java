@@ -25,8 +25,7 @@ public class MobManager {
         ConfigManager config = plugin.getConfigManager();
         Location chestLoc = chest.getLocation();
         
-        // Use effective values (with difficulty multiplier)
-        int mobCount = config.getEffectiveMobCount();
+        int mobCount = config.getMobCount();
         double radius = config.getMobSpawnRadius();
         
         chest.clearMobs();
@@ -63,22 +62,21 @@ public class MobManager {
     private void configureMob(LivingEntity mob, ExpeditionChest chest) {
         ConfigManager config = plugin.getConfigManager();
         
-        // Set custom name with difficulty indicator
-        String difficultyTag = config.getMobDifficulty().getDisplayName();
-        mob.setCustomName(ColorUtils.colorize(config.getMobName() + " " + difficultyTag));
+        // Set custom name
+        mob.setCustomName(ColorUtils.colorize(config.getMobName()));
         mob.setCustomNameVisible(true);
         
-        // Set health (with difficulty multiplier)
-        double effectiveHealth = config.getEffectiveMobHealth();
+        // Set health
+        double health = config.getMobHealth();
         if (mob.getAttribute(Attribute.GENERIC_MAX_HEALTH) != null) {
-            mob.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(effectiveHealth);
-            mob.setHealth(effectiveHealth);
+            mob.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(health);
+            mob.setHealth(health);
         }
         
-        // Set damage (with difficulty multiplier)
-        double effectiveDamage = config.getEffectiveMobDamage();
+        // Set damage
+        double damage = config.getMobDamage();
         if (mob.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE) != null) {
-            mob.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(effectiveDamage);
+            mob.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(damage);
         }
         
         // Set metadata

@@ -2,7 +2,6 @@ package com.virnor.expedition.gui;
 
 import com.virnor.expedition.VirnorExpedition;
 import com.virnor.expedition.config.ConfigManager;
-import com.virnor.expedition.data.MobDifficulty;
 import com.virnor.expedition.loot.LootManager;
 import com.virnor.expedition.loot.LootSet;
 import com.virnor.expedition.utils.ColorUtils;
@@ -65,68 +64,46 @@ public class GUIManager {
     }
 
     public void openMobSettings(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 45, MOB_SETTINGS_TITLE);
+        Inventory inv = Bukkit.createInventory(null, 36, MOB_SETTINGS_TITLE);
         ConfigManager config = plugin.getConfigManager();
         
-        // Row 1: Mob type and Difficulty
+        // Row 1: Mob type
         Material mobMaterial = getMobMaterial(config.getMobType());
         inv.setItem(10, createItem(mobMaterial, "&aMob Tipi: &f" + config.getMobType().name(),
             "&7Tıkla değiştirmek için"));
         
-        // Difficulty
-        Material diffMaterial = switch (config.getMobDifficulty()) {
-            case EASY -> Material.LIME_WOOL;
-            case NORMAL -> Material.YELLOW_WOOL;
-            case HARD -> Material.RED_WOOL;
-        };
-        inv.setItem(12, createItem(diffMaterial, "&6Zorluk: " + config.getMobDifficulty().getDisplayName(),
-            "&7Tıkla değiştirmek için",
-            "&8",
-            "&aKolay: &750% can, 50% hasar, 75% mob",
-            "&eNormal: &7100% can, 100% hasar, 100% mob",
-            "&cZor: &7150% can, 150% hasar, 125% mob"));
+        // Row 1: Mob health
+        inv.setItem(12, createItem(Material.RED_DYE, "&cCan Azalt (-10)",
+            "&7Mevcut: &f" + config.getMobHealth()));
         
-        // Row 2: Mob health
-        inv.setItem(19, createItem(Material.RED_DYE, "&cCan Azalt (-10)",
-            "&7Mevcut: &f" + config.getMobHealth(),
-            "&7Efektif: &f" + config.getEffectiveMobHealth()));
-        
-        inv.setItem(20, createItem(Material.RED_TERRACOTTA, "&cMob Canı: &f" + config.getMobHealth(),
-            "&7Efektif (zorlukla): &f" + config.getEffectiveMobHealth(),
+        inv.setItem(13, createItem(Material.RED_TERRACOTTA, "&cMob Canı: &f" + config.getMobHealth(),
             "&7Sol: -10, Sağ: +10"));
         
-        inv.setItem(21, createItem(Material.LIME_DYE, "&aCan Arttır (+10)",
-            "&7Mevcut: &f" + config.getMobHealth(),
-            "&7Efektif: &f" + config.getEffectiveMobHealth()));
+        inv.setItem(14, createItem(Material.LIME_DYE, "&aCan Arttır (+10)",
+            "&7Mevcut: &f" + config.getMobHealth()));
         
         // Row 2: Mob damage
-        inv.setItem(23, createItem(Material.RED_DYE, "&cHasar Azalt (-1)",
-            "&7Mevcut: &f" + config.getMobDamage(),
-            "&7Efektif: &f" + config.getEffectiveMobDamage()));
+        inv.setItem(19, createItem(Material.RED_DYE, "&cHasar Azalt (-1)",
+            "&7Mevcut: &f" + config.getMobDamage()));
         
-        inv.setItem(24, createItem(Material.IRON_SWORD, "&6Mob Hasarı: &f" + config.getMobDamage(),
-            "&7Efektif (zorlukla): &f" + config.getEffectiveMobDamage(),
+        inv.setItem(20, createItem(Material.IRON_SWORD, "&6Mob Hasarı: &f" + config.getMobDamage(),
             "&7Sol: -1, Sağ: +1"));
         
-        inv.setItem(25, createItem(Material.LIME_DYE, "&aHasar Arttır (+1)",
-            "&7Mevcut: &f" + config.getMobDamage(),
-            "&7Efektif: &f" + config.getEffectiveMobDamage()));
+        inv.setItem(21, createItem(Material.LIME_DYE, "&aHasar Arttır (+1)",
+            "&7Mevcut: &f" + config.getMobDamage()));
         
-        // Row 3: Mob count
-        inv.setItem(28, createItem(Material.RED_DYE, "&cMob Sayısı Azalt (-1)",
-            "&7Mevcut: &f" + config.getMobCount(),
-            "&7Efektif: &f" + config.getEffectiveMobCount()));
+        // Row 2: Mob count
+        inv.setItem(23, createItem(Material.RED_DYE, "&cMob Sayısı Azalt (-1)",
+            "&7Mevcut: &f" + config.getMobCount()));
         
-        inv.setItem(29, createItem(Material.SPAWNER, "&eMob Sayısı: &f" + config.getMobCount(),
-            "&7Efektif (zorlukla): &f" + config.getEffectiveMobCount(),
+        inv.setItem(24, createItem(Material.SPAWNER, "&eMob Sayısı: &f" + config.getMobCount(),
             "&7Sol: -1, Sağ: +1"));
         
-        inv.setItem(30, createItem(Material.LIME_DYE, "&aMob Sayısı Arttır (+1)",
-            "&7Mevcut: &f" + config.getMobCount(),
-            "&7Efektif: &f" + config.getEffectiveMobCount()));
+        inv.setItem(25, createItem(Material.LIME_DYE, "&aMob Sayısı Arttır (+1)",
+            "&7Mevcut: &f" + config.getMobCount()));
         
         // Back button
-        inv.setItem(40, createItem(Material.ARROW, "&cGeri Dön"));
+        inv.setItem(31, createItem(Material.ARROW, "&cGeri Dön"));
         
         // Fill empty slots
         ItemStack filler = createItem(Material.GRAY_STAINED_GLASS_PANE, " ");

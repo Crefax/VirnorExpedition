@@ -1,4 +1,4 @@
-# VirnorExpedition Configuration v1.3.0
+# VirnorExpedition Configuration v1.3.1
 
 # Mob settings - These are global for all expedition chests
 mob:
@@ -7,11 +7,6 @@ mob:
   damage: 5.0            # Base damage dealt by mobs
   count: 3
   name: "&c&lExpedition Guardian"
-  # Difficulty setting: EASY, NORMAL, HARD
-  # EASY: 50% health, 50% damage, 75% mob count
-  # NORMAL: 100% health, 100% damage, 100% mob count  
-  # HARD: 150% health, 150% damage, 125% mob count
-  difficulty: NORMAL
   # Health bar hologram above mobs
   showHealthBar: true
   healthBarTotalBars: 20          # Total number of bars |
