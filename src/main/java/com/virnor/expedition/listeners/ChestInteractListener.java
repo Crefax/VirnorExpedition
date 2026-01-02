@@ -15,9 +15,15 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
 public class ChestInteractListener implements Listener {
 
     private final VirnorExpedition plugin;
+    // Prevent double-click exploits
+    private final Set<UUID> claimingPlayers = new HashSet<>();
 
     public ChestInteractListener(VirnorExpedition plugin) {
         this.plugin = plugin;
@@ -52,6 +58,11 @@ public class ChestInteractListener implements Listener {
                 player.sendMessage(ColorUtils.colorize(config.getMsgPrefix() + config.getMsgKillMobsFirst()));
             }
             case CONQUERED -> {
+                // Prevent double-click exploit
+                if (claimingPlayers.contains(player.getUniqueId())) {
+                    return;
+                }
+                
                 // Check ownership bypass permission
                 boolean canBypass = player.hasPermission("expedition.bypass.ownership");
                 
@@ -70,19 +81,48 @@ public class ChestInteractListener implements Listener {
                     return;
                 }
 
-                plugin.getLootManager().giveLootToPlayer(player);
+                // Double-check state hasn't changed (thread safety)
+                if (chest.getState() != ExpeditionState.CONQUERED) {
+                    return;
+                }
+                
+                // Mark player as claiming to prevent double-click
+                claimingPlayers.add(player.getUniqueId());
+                
+                // FIRST set state to COOLDOWN, THEN give loot
                 plugin.getExpeditionManager().onLootClaimed(chest, player);
+                plugin.getLootManager().giveLootToPlayer(player);
+                
+                // Remove from claiming set after a short delay
+                plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+                    claimingPlayers.remove(player.getUniqueId());
+                }, 20L);
             }
             case COOLDOWN -> {
                 // Check cooldown bypass permission
                 if (player.hasPermission("expedition.bypass.cooldown")) {
-                    // Bypass cooldown, give loot anyway
-                    chest.setState(ExpeditionState.CONQUERED);
-                    chest.setOwnerUUID(player.getUniqueId());
-                    chest.setOwnershipExpireTime(System.currentTimeMillis() + (config.getOwnershipDuration() * 1000L));
+                    // Prevent double-click exploit
+                    if (claimingPlayers.contains(player.getUniqueId())) {
+                        return;
+                    }
                     
+                    claimingPlayers.add(player.getUniqueId());
+                    
+                    // Give loot and reset cooldown
                     plugin.getLootManager().giveLootToPlayer(player);
-                    plugin.getExpeditionManager().onLootClaimed(chest, player);
+                    
+                    // Reset cooldown timer
+                    chest.setCooldownExpireTime(System.currentTimeMillis() + (config.getCooldownDuration() * 1000L));
+                    plugin.getHologramManager().updateHologram(chest, 
+                        config.getHologramTitle(),
+                        config.getHologramStatusCooldown().replace("%time%", ColorUtils.formatTime(chest.getRemainingCooldown())));
+                    
+                    player.sendMessage(ColorUtils.colorize(config.getMsgPrefix() + config.getMsgLootReceived()));
+                    
+                    // Remove from claiming set after a short delay
+                    plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+                        claimingPlayers.remove(player.getUniqueId());
+                    }, 20L);
                     return;
                 }
                 
