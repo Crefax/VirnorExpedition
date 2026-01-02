@@ -2,6 +2,7 @@ package com.virnor.expedition.listeners;
 
 import com.virnor.expedition.VirnorExpedition;
 import com.virnor.expedition.config.ConfigManager;
+import com.virnor.expedition.data.MobDifficulty;
 import com.virnor.expedition.gui.GUIManager;
 import com.virnor.expedition.loot.LootManager;
 import com.virnor.expedition.loot.LootSet;
@@ -109,30 +110,56 @@ public class GUIListener implements Listener {
         GUIManager gui = plugin.getGuiManager();
         
         switch (slot) {
+            // Mob type
             case 10 -> gui.openMobTypeSelection(player);
+            
+            // Difficulty toggle
             case 12 -> {
+                config.setMobDifficulty(config.getMobDifficulty().next());
+                gui.openMobSettings(player);
+            }
+            
+            // Health decrease
+            case 19 -> {
                 double newHealth = Math.max(10, config.getMobHealth() - 10);
                 config.setMobHealth(newHealth);
                 gui.openMobSettings(player);
             }
-            case 14 -> {
+            // Health increase
+            case 21 -> {
                 double newHealth = Math.min(500, config.getMobHealth() + 10);
                 config.setMobHealth(newHealth);
                 gui.openMobSettings(player);
             }
-            case 15 -> {
+            
+            // Damage decrease
+            case 23 -> {
+                double newDamage = Math.max(1, config.getMobDamage() - 1);
+                config.setMobDamage(newDamage);
+                gui.openMobSettings(player);
+            }
+            // Damage increase
+            case 25 -> {
+                double newDamage = Math.min(50, config.getMobDamage() + 1);
+                config.setMobDamage(newDamage);
+                gui.openMobSettings(player);
+            }
+            
+            // Mob count decrease
+            case 28 -> {
                 int newCount = Math.max(1, config.getMobCount() - 1);
                 config.setMobCount(newCount);
                 gui.openMobSettings(player);
             }
-            case 16 -> {
-                if (event.getClick() == ClickType.RIGHT) {
-                    int newCount = Math.min(10, config.getMobCount() + 1);
-                    config.setMobCount(newCount);
-                    gui.openMobSettings(player);
-                }
+            // Mob count increase
+            case 30 -> {
+                int newCount = Math.min(10, config.getMobCount() + 1);
+                config.setMobCount(newCount);
+                gui.openMobSettings(player);
             }
-            case 22 -> gui.openMainMenu(player);
+            
+            // Back button
+            case 40 -> gui.openMainMenu(player);
         }
     }
 

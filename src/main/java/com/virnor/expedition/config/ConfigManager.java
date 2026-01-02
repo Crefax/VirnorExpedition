@@ -1,6 +1,7 @@
 package com.virnor.expedition.config;
 
 import com.virnor.expedition.VirnorExpedition;
+import com.virnor.expedition.data.MobDifficulty;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.EntityType;
 
@@ -11,8 +12,10 @@ public class ConfigManager {
     // Mob settings
     private EntityType mobType;
     private double mobHealth;
+    private double mobDamage;
     private int mobCount;
     private String mobName;
+    private MobDifficulty mobDifficulty;
     
     // Mob health bar settings
     private boolean showHealthBar;
@@ -92,8 +95,10 @@ public class ConfigManager {
             plugin.getLogger().warning("Invalid mob type in config, using ZOMBIE");
         }
         mobHealth = config.getDouble("mob.health", 50.0);
+        mobDamage = config.getDouble("mob.damage", 5.0);
         mobCount = config.getInt("mob.count", 3);
         mobName = config.getString("mob.name", "&c&lExpedition Guardian");
+        mobDifficulty = MobDifficulty.fromString(config.getString("mob.difficulty", "NORMAL"));
         
         // Mob health bar settings
         showHealthBar = config.getBoolean("mob.showHealthBar", true);
@@ -161,8 +166,10 @@ public class ConfigManager {
         
         config.set("mob.type", mobType.name());
         config.set("mob.health", mobHealth);
+        config.set("mob.damage", mobDamage);
         config.set("mob.count", mobCount);
         config.set("mob.name", mobName);
+        config.set("mob.difficulty", mobDifficulty.name());
         
         config.set("mob.showHealthBar", showHealthBar);
         config.set("mob.healthBarTotalBars", healthBarTotalBars);
@@ -227,11 +234,22 @@ public class ConfigManager {
     public double getMobHealth() { return mobHealth; }
     public void setMobHealth(double mobHealth) { this.mobHealth = mobHealth; saveConfig(); }
     
+    public double getMobDamage() { return mobDamage; }
+    public void setMobDamage(double mobDamage) { this.mobDamage = mobDamage; saveConfig(); }
+    
     public int getMobCount() { return mobCount; }
     public void setMobCount(int mobCount) { this.mobCount = mobCount; saveConfig(); }
     
     public String getMobName() { return mobName; }
     public void setMobName(String mobName) { this.mobName = mobName; saveConfig(); }
+    
+    public MobDifficulty getMobDifficulty() { return mobDifficulty; }
+    public void setMobDifficulty(MobDifficulty mobDifficulty) { this.mobDifficulty = mobDifficulty; saveConfig(); }
+    
+    // Get effective values with difficulty multiplier
+    public double getEffectiveMobHealth() { return mobHealth * mobDifficulty.getHealthMultiplier(); }
+    public double getEffectiveMobDamage() { return mobDamage * mobDifficulty.getDamageMultiplier(); }
+    public int getEffectiveMobCount() { return (int) Math.ceil(mobCount * mobDifficulty.getCountMultiplier()); }
     
     public double getSpawnDistance() { return spawnDistance; }
     public void setSpawnDistance(double spawnDistance) { this.spawnDistance = spawnDistance; saveConfig(); }
