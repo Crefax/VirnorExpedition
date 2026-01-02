@@ -16,14 +16,11 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.UUID;
 
 public class ChestInteractListener implements Listener {
 
     private final VirnorExpedition plugin;
-    // Prevent double-click exploits - stores chest IDs currently being claimed
-    private final Set<String> chestsBeingClaimed = new HashSet<>();
 
     public ChestInteractListener(VirnorExpedition plugin) {
         this.plugin = plugin;
@@ -52,7 +49,10 @@ public class ChestInteractListener implements Listener {
             return;
         }
 
-        switch (chest.getState()) {
+        // Get current state ONCE at the beginning
+        ExpeditionState currentState = chest.getState();
+
+        switch (currentState) {
             case READY -> {
                 player.sendMessage(ColorUtils.colorize(config.getMsgPrefix() + config.getMsgApproachToActivate()));
             }
@@ -69,28 +69,26 @@ public class ChestInteractListener implements Listener {
     }
 
     private void handleConqueredChest(Player player, ExpeditionChest chest, ConfigManager config) {
-        // Check if this chest is already being claimed
-        synchronized (chestsBeingClaimed) {
-            if (chestsBeingClaimed.contains(chest.getId())) {
-                return;
-            }
-        }
+        // STEP 1: Check ownership FIRST before anything else
+        boolean hasOwnershipBypass = player.hasPermission("expedition.bypass.ownership");
+        UUID ownerUUID = chest.getOwnerUUID();
+        UUID playerUUID = player.getUniqueId();
         
-        // Check ownership - only owner or bypass can claim
-        boolean canBypass = player.hasPermission("expedition.bypass.ownership");
-        
-        if (!canBypass) {
-            if (chest.getOwnerUUID() == null) {
+        // If no bypass permission, must be the owner
+        if (!hasOwnershipBypass) {
+            // No owner set = no one can claim
+            if (ownerUUID == null) {
                 player.sendMessage(ColorUtils.colorize(config.getMsgPrefix() + config.getMsgNotOwner()));
                 return;
             }
-            if (!chest.getOwnerUUID().equals(player.getUniqueId())) {
+            // Not the owner
+            if (!ownerUUID.equals(playerUUID)) {
                 player.sendMessage(ColorUtils.colorize(config.getMsgPrefix() + config.getMsgNotOwner()));
                 return;
             }
         }
 
-        // Check if ownership expired
+        // STEP 2: Check if ownership time expired
         if (chest.isOwnershipExpired()) {
             player.sendMessage(ColorUtils.colorize(config.getMsgPrefix() + config.getMsgOwnershipExpired()));
             chest.setState(ExpeditionState.READY);
@@ -101,21 +99,22 @@ public class ChestInteractListener implements Listener {
             return;
         }
 
-        // Double-check state hasn't changed
-        if (chest.getState() != ExpeditionState.CONQUERED) {
+        // STEP 3: Try to acquire the claim lock
+        if (!chest.tryClaimLock()) {
+            // Already being claimed or recently claimed
             return;
         }
         
-        // Lock this chest for claiming
-        synchronized (chestsBeingClaimed) {
-            if (chestsBeingClaimed.contains(chest.getId())) {
-                return;
-            }
-            chestsBeingClaimed.add(chest.getId());
+        // STEP 4: Double-check state is still CONQUERED (after getting lock)
+        if (chest.getState() != ExpeditionState.CONQUERED) {
+            chest.releaseLock(false);
+            return;
         }
         
+        // STEP 5: Process the claim
+        boolean success = false;
         try {
-            // FIRST change state to COOLDOWN
+            // Change state to COOLDOWN immediately
             chest.setState(ExpeditionState.COOLDOWN);
             chest.setCooldownExpireTime(System.currentTimeMillis() + (config.getCooldownDuration() * 1000L));
             chest.setOwnerUUID(null);
@@ -125,7 +124,7 @@ public class ChestInteractListener implements Listener {
                 config.getHologramTitle(),
                 config.getHologramStatusCooldown().replace("%time%", ColorUtils.formatTime(chest.getRemainingCooldown())));
             
-            // THEN give loot
+            // Give loot
             plugin.getLootManager().giveLootToPlayer(player);
             
             // Send message
@@ -133,46 +132,37 @@ public class ChestInteractListener implements Listener {
             
             // Save data
             plugin.getDataManager().saveData();
+            
+            success = true;
         } finally {
-            // Unlock chest after a delay
-            plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                synchronized (chestsBeingClaimed) {
-                    chestsBeingClaimed.remove(chest.getId());
-                }
-            }, 20L);
+            // Release lock after processing
+            chest.releaseLock(success);
         }
     }
 
     private void handleCooldownChest(Player player, ExpeditionChest chest, ConfigManager config) {
-        // Check cooldown bypass permission
-        if (player.hasPermission("expedition.bypass.cooldown")) {
-            // Check if this chest is already being claimed
-            synchronized (chestsBeingClaimed) {
-                if (chestsBeingClaimed.contains(chest.getId())) {
-                    return;
-                }
-                chestsBeingClaimed.add(chest.getId());
-            }
-            
-            try {
-                // Give loot (state stays COOLDOWN)
-                plugin.getLootManager().giveLootToPlayer(player);
-                player.sendMessage(ColorUtils.colorize(config.getMsgPrefix() + config.getMsgLootReceived()));
-            } finally {
-                // Unlock chest after a delay
-                plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                    synchronized (chestsBeingClaimed) {
-                        chestsBeingClaimed.remove(chest.getId());
-                    }
-                }, 20L);
-            }
+        // Only bypass permission holders can claim during cooldown
+        if (!player.hasPermission("expedition.bypass.cooldown")) {
+            String timeLeft = ColorUtils.formatTime(chest.getRemainingCooldown());
+            String message = config.getMsgCooldown().replace("%time%", timeLeft);
+            player.sendMessage(ColorUtils.colorize(config.getMsgPrefix() + message));
             return;
         }
         
-        // Show cooldown message
-        String timeLeft = ColorUtils.formatTime(chest.getRemainingCooldown());
-        String message = config.getMsgCooldown().replace("%time%", timeLeft);
-        player.sendMessage(ColorUtils.colorize(config.getMsgPrefix() + message));
+        // Try to acquire lock
+        if (!chest.tryClaimLock()) {
+            return;
+        }
+        
+        boolean success = false;
+        try {
+            // Give loot (state stays COOLDOWN, timer not reset)
+            plugin.getLootManager().giveLootToPlayer(player);
+            player.sendMessage(ColorUtils.colorize(config.getMsgPrefix() + config.getMsgLootReceived()));
+            success = true;
+        } finally {
+            chest.releaseLock(success);
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGH)

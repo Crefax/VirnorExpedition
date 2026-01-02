@@ -17,6 +17,11 @@ public class ExpeditionChest {
     private long cooldownExpireTime;
     private List<UUID> mobUUIDs;
     private int mobsAlive;
+    
+    // Claim protection
+    private volatile boolean claimLocked = false;
+    private volatile long lastClaimTime = 0;
+    private static final long CLAIM_COOLDOWN_MS = 3000; // 3 seconds between claims
 
     public ExpeditionChest(String id, Location location) {
         this.id = id;
@@ -113,5 +118,34 @@ public class ExpeditionChest {
 
     public long getRemainingOwnershipTime() {
         return Math.max(0, ownershipExpireTime - System.currentTimeMillis());
+    }
+    
+    /**
+     * Try to acquire claim lock. Returns true if lock acquired.
+     */
+    public synchronized boolean tryClaimLock() {
+        long now = System.currentTimeMillis();
+        if (claimLocked || (now - lastClaimTime) < CLAIM_COOLDOWN_MS) {
+            return false;
+        }
+        claimLocked = true;
+        return true;
+    }
+    
+    /**
+     * Release claim lock and record claim time.
+     */
+    public synchronized void releaseLock(boolean claimed) {
+        if (claimed) {
+            lastClaimTime = System.currentTimeMillis();
+        }
+        claimLocked = false;
+    }
+    
+    /**
+     * Check if claiming is allowed (not locked and cooldown passed).
+     */
+    public boolean canClaim() {
+        return !claimLocked && (System.currentTimeMillis() - lastClaimTime) >= CLAIM_COOLDOWN_MS;
     }
 }
